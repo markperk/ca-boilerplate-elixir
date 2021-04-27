@@ -1,0 +1,74 @@
+<section class="phx-hero">
+  <form name="generateLinkForm">
+    <section class='footer <%= if @is_web, do: "web", else: "mobile"%>'>
+      <img src="https://www.incimages.com/uploaded_files/image/1920x1080/parks-and-recreation_32716.jpg" alt="swanson">
+      <button
+          class='podium-button <%= @is_web && "web" %>'
+          name="body"
+          type="button"
+        >
+          Swansify
+        </button>
+        <div class='body'>
+          <h3 id="quote"></h3>
+        </div>
+    </section>
+  </form>
+</section>
+
+
+<script type="text/javascript">
+  function generateQuote() {
+    fetch("http://ron-swanson-quotes.herokuapp.com/v2/quotes/1")
+      .then(res => res.json())
+      .then(text => {
+      document.getElementById("quote").innerHTML = text
+    })
+  }
+
+  document.generateLinkForm.elements.body.onclick = () => generateQuote();
+  document.generateLinkForm.elements.submit.onclick = () => podiumInjectComposerData(body);
+  document.generateLinkForm.elements.cancel.onclick = () => close();
+
+  const body = {
+    type: "body",
+    attributes: {
+      text: "Hey Susan I hope you had an awesome day!! Was just wondering if you got that email from Greg??",
+      isEditable: true
+    }
+  };
+
+  const injectComposerData = composerAppData => {
+    console.log(composerAppData)
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({
+          composerAppData
+        })
+      );
+    } else if (window.parent) {
+      window.parent.postMessage(
+        {
+          composerAppData
+        },
+        "*"
+      );
+    } else {
+      throw new Error(
+        `could not find WebView or iFrame to mount Composer App on.`
+      );
+    }
+  };
+
+  // this function "should" be a package
+  function podiumInjectComposerData(composerAppData) {
+    injectComposerData(composerAppData);
+  };
+
+  document.generateLinkForm.onsubmit = (event) => {
+    event.preventDefault();
+    injectComposerData();
+  }
+
+  document.generateLinkForm.elements.cancel.onclick = () => close();
+</script>
